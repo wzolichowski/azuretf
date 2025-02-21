@@ -116,7 +116,6 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
     version   = "latest"
   }
 
-  
   provisioner "local-exec" {
     command = templatefile("windows-ssh-script.tpl", {
       hostname     = self.public_ip_address,
@@ -129,4 +128,9 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
   tags = {
     environment = "dev"
   }
+}
+
+data "azurerm_public_ip" "linuxvm-ip-data" {
+  name                = azurerm_public_ip.terraformip.name
+  resource_group_name = azurerm_resource_group.terraform.name
 }
