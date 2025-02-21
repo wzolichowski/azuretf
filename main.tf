@@ -117,14 +117,14 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
   }
 
   provisioner "local-exec" {
-    command = templatefile("windows-ssh-script.tpl", {
+    command = templatefile("${var.host_os}-ssh-script.tpl", {
       hostname     = self.public_ip_address,
       user         = "azureuser",
       identityfile = "~/.ssh/virtualazurekey"
     })
-    interpreter = ["Powershell", "-Command"]
+    interpreter = var.host_os == "windows" ? ["Powershell", "-Command"] : ["bash", "-c"]
+    
   }
-
   tags = {
     environment = "dev"
   }
