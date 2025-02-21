@@ -1,84 +1,76 @@
-# **Terraform Azure Infrastructure Deployment**
+# Terraform Azure Infrastructure
 
-This Terraform project automates the provisioning of an Azure cloud environment, including a virtual network, security groups, a Linux virtual machine, and associated resources.
+## Overview
+This Terraform project provisions an Azure environment, including a resource group, virtual network, subnet, network security group, public IP, network interface, and a Linux virtual machine.
 
-## **Prerequisites**
-Before using this Terraform configuration, ensure you have:
-- **Terraform v4.1.0** installed  
-- An **Azure subscription**  
-- An **SSH key pair** (if using SSH authentication for the VM)  
-- The **Azure CLI** installed and authenticated (`az login`)
+## Prerequisites
+Before running this Terraform configuration, ensure you have the following:
 
-## **Resources Created**
-This Terraform script provisions the following resources in **West Europe**:
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) installed
+- An active Azure subscription
+- Azure CLI installed and authenticated (`az login`)
+- SSH key pair for VM access (`~/.ssh/virtualazurekey.pub`)
 
-### **1. Resource Group**
-- Name: `terraform-resource`
+## Resources Created
+This Terraform configuration provisions the following resources:
 
-### **2. Virtual Network**
-- Name: `terraform-network`
-- Address space: `10.123.0.0/16`
+- **Resource Group**: `terraform-resource`
+- **Virtual Network**: `terraform-network` (Address space: `10.123.0.0/16`)
+- **Subnet**: `terraform_subnet` (CIDR: `10.123.1.0/24`)
+- **Network Security Group**: `terraformsecgroup` (Allowing inbound traffic)
+- **Public IP**: `terraformip` (Static allocation)
+- **Network Interface**: `networkinterface`
+- **Linux Virtual Machine**: `tflinuxvm` (Ubuntu 20.04 LTS)
 
-### **3. Subnet**
-- Name: `terraform_subnet`
-- Address range: `10.123.1.0/24`
+## Configuration
+### Variables
+- `subscription_id`: Your Azure Subscription ID
+- `host_os`: Operating system for provisioning script execution (e.g., `linux`, `windows`)
 
-### **4. Network Security Group (NSG)**
-- Name: `terraformsecgroup`
-- Security Rule:  
-  - Allows all inbound traffic (`*`) - *Modify for production use*
+### Custom Data (Cloud-init Script)
+The `customdata.tpl` script installs essential packages such as Docker, Git, Vim, and Python.
 
-### **5. Public IP Address**
-- Name: `terraformip`
-- Type: `Static`
-
-### **6. Network Interface**
-- Name: `networkinterface`
-- Associated with `terraform_subnet`
-- Uses the `terraformip` public IP
-
-### **7. Linux Virtual Machine**
-- Name: `tflinuxvm`
-- Type: `Standard_B1s`
-- OS: Ubuntu Server 20.04 LTS  
-- SSH Key Authentication (uses `~/.ssh/virtualazurekey.pub`)  
-- Runs a **local-exec provisioner** to execute a PowerShell script  
-
-## **Usage**
-
-### **1. Initialize Terraform**
+## Usage
+### 1. Initialize Terraform
 Run the following command to initialize the Terraform working directory:
 ```sh
 terraform init
 ```
 
-### **2. Preview Changes**
-To see what Terraform will create, run:
+### 2. Plan Deployment
+To preview the changes Terraform will apply, run:
 ```sh
 terraform plan
 ```
 
-### **3. Apply Changes**
-To create the resources in Azure, execute:
+### 3. Apply Changes
+Deploy the infrastructure using:
 ```sh
 terraform apply -auto-approve
 ```
 
-### **4. Destroy Infrastructure**
-If you need to delete all resources created by Terraform:
+### 4. Retrieve Public IP
+After provisioning, get the VM's public IP with:
+```sh
+terraform output public_ip_address
+```
+
+### 5. Connect to the VM
+Use SSH to access the VM:
+```sh
+ssh -i ~/.ssh/virtualazurekey azureuser@<public-ip>
+```
+
+## Cleanup
+To remove all resources, run:
 ```sh
 terraform destroy -auto-approve
 ```
 
-## **Customization**
-- **Modify the `customdata.tpl` file** to change cloud-init configurations for the VM.  
-- **Adjust NSG rules** in `azurerm_network_security_rule` to restrict access.  
-- **Change the VM size (`size` attribute)** if a different instance type is needed.
+## Notes
+- Ensure SSH keys exist at `~/.ssh/virtualazurekey` before applying.
+- Modify the `customdata.tpl` script to customize package installations.
+- This configuration uses a `local-exec` provisioner to run OS-specific scripts based on `host_os`.
+- Customize your path to .ssh if you are using Windows.
 
-## **Notes**
-- The **NSG rule currently allows all inbound traffic**, which is **insecure** for production. Restrict it to specific IPs or ports.
-- The **SSH key file path (`~/.ssh/virtualazurekey.pub`)** should match your actual SSH key location.
-- The **local-exec provisioner** uses PowerShell to run a script after VM creation.
 
-## **License**
-This project is licensed under the **MIT License**.
