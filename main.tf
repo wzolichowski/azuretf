@@ -123,7 +123,7 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
       identityfile = "~/.ssh/virtualazurekey"
     })
     interpreter = var.host_os == "windows" ? ["Powershell", "-Command"] : ["bash", "-c"]
-    
+
   }
   tags = {
     environment = "dev"
