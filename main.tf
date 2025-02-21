@@ -135,6 +135,6 @@ data "azurerm_public_ip" "linuxvm-ip-data" {
   resource_group_name = azurerm_resource_group.terraform.name
 }
 
-output "public_ip_address" {
+output "public_ip_address" { #terraform output
   value = "${azurerm_linux_virtual_machine.linuxvm.name}: ${data.azurerm_public_ip.linuxvm-ip-data.ip_address}"
 }
